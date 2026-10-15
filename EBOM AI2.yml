@@ -1,0 +1,480 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: workflow
+  name: EBOM AI2
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.24@9e12eef09973667f0eaf4f082af883167e1de88740b22e71e71488d020c3778a
+    version: null
+kind: app
+version: 0.7.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 50
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        knowledge_file_size_limit: 15
+        single_chunk_attachment_limit: 10
+        skill_file_size_limit: 50
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1789383463540-source-1789383469367-target
+      source: '1789383463540'
+      sourceHandle: source
+      target: '1789383469367'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1789383469367-source-1789384555335-target
+      source: '1789383469367'
+      sourceHandle: source
+      target: '1789384555335'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: end
+      id: 1789384555335-source-1789384462119-target
+      source: '1789384555335'
+      sourceHandle: source
+      target: '1789384462119'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: material_context
+          max_length: 10000
+          options: []
+          placeholder: ''
+          required: true
+          type: paragraph
+          variable: material_context
+        - default: ''
+          hint: ''
+          label: similar_cases
+          max_length: 10000
+          options: []
+          placeholder: ''
+          required: true
+          type: paragraph
+          variable: similar_cases
+        - default: ''
+          hint: ''
+          label: allowed_operations
+          max_length: 10000
+          options: []
+          placeholder: ''
+          required: true
+          type: paragraph
+          variable: allowed_operations
+      height: 160
+      id: '1789383463540'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: 4990961c-f1d6-4d10-b340-3d0b8b746d0b
+          role: system
+          text: "你是一个离散制造 PBOM 未覆盖物料的生产工序决策支持助手。\n\n你的任务不是决定最终生产工序。\n\n你的职责是：\n\n\
+            对于已经确认无法通过 Process Template 和已批准业务规则处理的物料，\n根据用户提供的物料上下文、相似已知案例和允许的生产工序，\n\
+            生成供人工审核的候选生产工序建议。\n\n\n====================\n一、角色边界\n====================\n\
+            \n1. 你不能决定最终生产工序。\n\n2. 你只能提供候选工序和支持证据。\n\n3. 最终生产工序必须由人工确认。\n\n4. needs_human_review\
+            \ 必须始终为 true。\n\n5. 不得声称候选结果已经批准、生效或可以直接写入 PBOM。\n\n\n====================\n\
+            二、允许使用的信息\n====================\n\n只能使用以下信息：\n\n1. material_context\n\
+            2. similar_cases\n3. allowed_operations\n\n禁止根据制造业常识、模型训练知识或外部知识自行补充业务逻辑。\n\
+            \n如果输入信息不足以形成可靠候选，\n必须返回 UNKNOWN。\n\n\n====================\n三、生产工序约束\n\
+            ====================\n\n候选生产工序必须严格来自 allowed_operations。\n\n禁止：\n\n- 创造新的生产工序名称；\n\
+            - 修改允许工序的名称；\n- 对允许工序进行简称、扩写或重命名；\n- 输出 allowed_operations 之外的工序。\n\n\
+            如果没有任何允许工序得到输入证据支持：\n\nstatus = \"UNKNOWN\"\ncandidates = []\n\n\n====================\n\
+            四、相似案例使用规则\n====================\n\nsimilar_cases 只作为参考证据。\n\n不得因为两个物料名称相似，\n\
+            就直接认定它们必须属于同一生产工序。\n\n必须考虑用户提供的上下文，例如：\n\n- 物料名称\n- Epart\n- 上级物料\n- 下层物料\n\
+            - BOM 结构\n- 描述字段\n- 已知类别\n- 已确认案例中的共同特征\n\n不得使用用户没有提供的信息。\n\n\n如果多个相似案例给出相互冲突的生产工序：\n\
+            \n不得自行选择其中一个作为确定结果。\n\n应：\n\n- 降低 confidence_score；\n- 在 ambiguities 中记录冲突；\n\
+            - 必要时返回 UNKNOWN。\n\n\n====================\n五、候选数量\n====================\n\
+            \n最多输出 3 个候选生产工序。\n\n如果只有一个工序有明确证据支持，\n可以只输出一个。\n\n不要为了凑够 3 个候选而加入没有证据支持的工序。\n\
+            \n\n====================\n六、confidence_score\n====================\n\n\
+            每个候选包含 confidence_score。\n\n范围：\n\n0 到 100。\n\nconfidence_score 只是模型基于当前输入证据给出的相对置信评分，\n\
+            不是统计概率，也不能视为自动审批依据。\n\n评分原则：\n\n80-100：\n存在非常相似且已确认的案例，\n主要业务特征高度一致。\n\
+            \n60-79：\n存在较强相似证据，\n但仍存在部分差异或信息缺失。\n\n40-59：\n只有弱相关证据，\n仅可作为人工排查方向。\n\
+            \n低于 40：\n通常不应作为候选输出，\n优先返回 UNKNOWN。\n\n不得仅因为工序名称“看起来合理”就提高 confidence_score。\n\
+            \n\n====================\n七、evidence\n====================\n\n每个候选必须给出\
+            \ evidence。\n\nevidence 只能来自用户提供的：\n\n- material_context；\n- similar_cases。\n\
+            \n不得写：\n\n“根据经验”\n“通常情况下”\n“行业惯例”\n“根据制造业常识”\n\n等外部依据。\n\nevidence 应说明：\n\
+            \n为什么该候选与当前物料存在关联。\n\n\n====================\n八、UNKNOWN\n====================\n\
+            \n出现以下情况之一时，应优先返回 UNKNOWN：\n\n1. 没有提供相似案例；\n2. 相似案例和当前物料差异明显；\n3. 多个案例相互冲突且无法区分；\n\
+            4. 当前物料上下文信息不足；\n5. 没有任何 allowed_operations 获得输入证据支持；\n6. 必须依赖用户没有提供的信息才能判断。\n\
+            \nUNKNOWN 是合法结果，\n不得为了给出答案而强制选择工序。\n\n\n====================\n九、输出 JSON\n\
+            ====================\n\n只能输出合法 JSON。\n\n禁止输出：\n\n- Markdown\n- JSON 代码块\n\
+            - 分析过程\n- 思考过程\n- JSON 之外的解释文字\n\n\n必须严格使用以下结构：\n\n{\n  \"status\": \"\
+            CANDIDATES\",\n\n  \"analysis_summary\": \"对当前证据的简短总结\",\n\n  \"candidates\"\
+            : [\n    {\n      \"rank\": 1,\n      \"operation\": \"必须来自 allowed_operations\"\
+            ,\n      \"confidence_score\": 80,\n      \"reason\": \"为什么把该工序列为候选\"\
+            ,\n      \"evidence\": [\n        \"证据1\",\n        \"证据2\"\n      ]\n\
+            \    }\n  ],\n\n  \"missing_information\": [],\n\n  \"ambiguities\": [],\n\
+            \n  \"needs_human_review\": true\n}\n\n\nstatus 只能使用：\n\n- \"CANDIDATES\"\
+            \n- \"UNKNOWN\"\n\n\n如果 status = \"UNKNOWN\"：\n\n必须：\n\n\"candidates\"\
+            : []\n\n\n例如：\n\n{\n  \"status\": \"UNKNOWN\",\n  \"analysis_summary\"\
+            : \"当前信息不足以支持任何允许工序。\",\n  \"candidates\": [],\n  \"missing_information\"\
+            : [\n    \"缺少可用于判断生产工序的相似已确认案例\"\n  ],\n  \"ambiguities\": [],\n  \"needs_human_review\"\
+            : true\n}\n\n\n====================\n十、candidates 规则\n====================\n\
+            \n每个 candidate 必须包含：\n\n- rank\n- operation\n- confidence_score\n- reason\n\
+            - evidence\n\n\nrank：\n\n从 1 开始连续排列。\n\n\noperation：\n\n必须逐字匹配 allowed_operations\
+            \ 中的一个工序。\n\n\nconfidence_score：\n\n必须为 0 到 100 的整数。\n\n\nreason：\n\n\
+            只能总结输入证据，\n不得加入外部业务逻辑。\n\n\nevidence：\n\n必须为非空数组。\n\n\n同一个 operation 不得重复出现。\n\
+            \n\n====================\n十一、missing_information\n====================\n\
+            \n用于记录：\n\n如果希望人工进一步判断生产工序，\n还缺少哪些实际业务信息。\n\n例如：\n\n- 缺少该物料的上级 Epart；\n\
+            - 缺少可比较的已确认案例；\n- 缺少关键物料描述。\n\n不得要求与业务判断无关的信息。\n\n\n====================\n\
+            十二、ambiguities\n====================\n\n用于记录当前输入中真实存在的冲突或歧义。\n\n例如：\n\n\
+            - 两个高度相似案例分别对应不同工序；\n- 同一物料上下文存在互相冲突的信息。\n\n不要为了体现谨慎而主动制造歧义。\n\n不同相似案例对应不同生产工序，\n\
+            并不自动构成业务歧义。\n\n只有当两个或多个案例与当前物料具有近似相同的关键特征、\n相似度均较高，\n但却对应不同生产工序时，\n才应记录为\
+            \ ambiguities。\n\n如果某个案例明显比其他案例更相似，\n应在 reason 中说明差异，\n不得仅因为不同案例对应不同工序就制造\
+            \ ambiguity。\n====================\n十三、人工审核\n====================\n\n\
+            无论候选置信度多高：\n\n\"needs_human_review\": true\n\n必须始终成立。\n\n输出只能作为人工审核辅助，\n\
+            不得作为最终生产工序决定。"
+        - id: 8365c37b-de3d-4640-868f-0573d8c5360f
+          role: user
+          text: "请分析下面这个未被 Process Template 和已批准业务规则覆盖的 PBOM 物料。 \n【未覆盖物料信息】\n{{#1789383463540.material_context#}}\n\
+            【相似已知案例】\n{{#1789383463540.similar_cases#}}\n【允许的生产工序】\n{{#1789383463540.allowed_operations#}}\n\
+            请严格按照 System Prompt 输出候选工序分析结果。\n"
+        reasoning_format: separated
+        selected: false
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1789383469367'
+      position:
+        x: 382
+        y: 282
+      positionAbsolute:
+        x: 382
+        y: 282
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 0
+    - data:
+        outputs:
+        - value_selector:
+          - '1789384555335'
+          - result_json
+          value_type: string
+          variable: result_json
+        - value_selector:
+          - '1789384555335'
+          - valid
+          value_type: boolean
+          variable: valid
+        - value_selector:
+          - '1789384555335'
+          - issues
+          value_type: array[string]
+          variable: issues
+        selected: false
+        title: 输出
+        type: end
+      height: 141
+      id: '1789384462119'
+      position:
+        x: 983
+        y: 282
+      positionAbsolute:
+        x: 983
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 0
+    - data:
+        code: "import json\nimport re\n\n\ndef parse_allowed_operations(raw_text:\
+          \ str):\n    \"\"\"\n    将 Start 节点传入的 allowed_operations\n    转换成工序名称列表。\n\
+          \n    支持：\n    1. JSON Array\n    2. 一行一个工序\n    3. 带 - / * / • / 1. 等列表符号\n\
+          \    \"\"\"\n\n    text = (raw_text or \"\").strip()\n\n    if not text:\n\
+          \        return []\n\n    # 先尝试 JSON Array\n    try:\n        parsed = json.loads(text)\n\
+          \n        if isinstance(parsed, list):\n            result = []\n\n    \
+          \        for item in parsed:\n                if isinstance(item, str) and\
+          \ item.strip():\n                    result.append(item.strip())\n\n   \
+          \         return result\n\n    except Exception:\n        pass\n\n    #\
+          \ 普通多行文本\n    operations = []\n\n    for line in text.splitlines():\n\n\
+          \        line = line.strip()\n\n        if not line:\n            continue\n\
+          \n        # 去除常见 bullet\n        line = re.sub(\n            r\"^\\s*[-*•]+\\\
+          s*\",\n            \"\",\n            line\n        )\n\n        # 去除 1.\
+          \ / 1、 / 1) 等编号\n        line = re.sub(\n            r\"^\\s*\\d+\\s*[.)、]\\\
+          s*\",\n            \"\",\n            line\n        )\n\n        line =\
+          \ line.strip()\n\n        if line:\n            operations.append(line)\n\
+          \n    return operations\n\n\ndef main(llm_text: str, allowed_operations:\
+          \ str):\n    issues = []\n\n    text = (llm_text or \"\").strip()\n\n  \
+          \  # =========================================================\n    # 0.\
+          \ 清理 LLM 输出\n    # =========================================================\n\
+          \n    # 清理 DeepSeek <think>...</think>\n    text = re.sub(\n        r\"\
+          <think>.*?</think>\",\n        \"\",\n        text,\n        flags=re.DOTALL\
+          \ | re.IGNORECASE\n    ).strip()\n\n    # 清理 Markdown code fence\n    text\
+          \ = re.sub(\n        r\"^```json\\s*\",\n        \"\",\n        text,\n\
+          \        flags=re.IGNORECASE\n    )\n\n    text = re.sub(\n        r\"^```\\\
+          s*\",\n        \"\",\n        text\n    )\n\n    text = re.sub(\n      \
+          \  r\"\\s*```$\",\n        \"\",\n        text\n    ).strip()\n\n    # =========================================================\n\
+          \    # 1. 解析 allowed_operations\n    # =========================================================\n\
+          \n    allowed_list = parse_allowed_operations(\n        allowed_operations\n\
+          \    )\n\n    allowed_set = set(allowed_list)\n\n    if not allowed_list:\n\
+          \        issues.append(\n            \"allowed_operations 为空或无法解析\"\n  \
+          \      )\n\n    # =========================================================\n\
+          \    # 2. JSON 解析\n    # =========================================================\n\
+          \n    try:\n        result = json.loads(text)\n\n    except Exception as\
+          \ e:\n\n        return {\n            \"result_json\": \"{}\",\n       \
+          \     \"valid\": False,\n            \"issues\": [\n                f\"\
+          LLM 输出无法解析为 JSON：{str(e)}\"\n            ]\n        }\n\n    if not isinstance(result,\
+          \ dict):\n\n        return {\n            \"result_json\": \"{}\",\n   \
+          \         \"valid\": False,\n            \"issues\": [\n               \
+          \ \"LLM 输出不是 JSON Object\"\n            ]\n        }\n\n    # =========================================================\n\
+          \    # 3. 顶层字段\n    # =========================================================\n\
+          \n    required_top_fields = [\n        \"status\",\n        \"analysis_summary\"\
+          ,\n        \"candidates\",\n        \"missing_information\",\n        \"\
+          ambiguities\",\n        \"needs_human_review\"\n    ]\n\n    for field in\
+          \ required_top_fields:\n\n        if field not in result:\n            issues.append(\n\
+          \                f\"缺少顶层字段 {field}\"\n            )\n\n    # =========================================================\n\
+          \    # 4. status\n    # =========================================================\n\
+          \n    status = result.get(\"status\")\n\n    allowed_status = {\n      \
+          \  \"CANDIDATES\",\n        \"UNKNOWN\"\n    }\n\n    if status not in allowed_status:\n\
+          \n        issues.append(\n            \"status 必须为 CANDIDATES 或 UNKNOWN\"\
+          \n        )\n\n    # =========================================================\n\
+          \    # 5. analysis_summary\n    # =========================================================\n\
+          \n    analysis_summary = result.get(\n        \"analysis_summary\"\n   \
+          \ )\n\n    if (\n        not isinstance(analysis_summary, str)\n       \
+          \ or not analysis_summary.strip()\n    ):\n        issues.append(\n    \
+          \        \"analysis_summary 必须为非空字符串\"\n        )\n\n    # =========================================================\n\
+          \    # 6. candidates\n    # =========================================================\n\
+          \n    candidates = result.get(\"candidates\")\n\n    if not isinstance(candidates,\
+          \ list):\n\n        issues.append(\n            \"candidates 必须为数组\"\n \
+          \       )\n\n        candidates = []\n\n    else:\n\n        # 最多 3 个候选\n\
+          \        if len(candidates) > 3:\n\n            issues.append(\n       \
+          \         \"candidates 最多只能包含 3 个候选工序\"\n            )\n\n        # UNKNOWN\
+          \ 必须没有候选\n        if (\n            status == \"UNKNOWN\"\n            and\
+          \ len(candidates) != 0\n        ):\n            issues.append(\n       \
+          \         \"status=UNKNOWN 时 candidates 必须为空数组\"\n            )\n\n    \
+          \    # CANDIDATES 至少一个\n        if (\n            status == \"CANDIDATES\"\
+          \n            and len(candidates) == 0\n        ):\n            issues.append(\n\
+          \                \"status=CANDIDATES 时至少需要一个 candidate\"\n            )\n\
+          \n    seen_operations = set()\n\n    for i, candidate in enumerate(candidates):\n\
+          \n        candidate_no = i + 1\n\n        if not isinstance(candidate, dict):\n\
+          \n            issues.append(\n                f\"第 {candidate_no} 个 candidate\
+          \ 格式错误\"\n            )\n\n            continue\n\n        required_candidate_fields\
+          \ = [\n            \"rank\",\n            \"operation\",\n            \"\
+          confidence_score\",\n            \"reason\",\n            \"evidence\"\n\
+          \        ]\n\n        for field in required_candidate_fields:\n\n      \
+          \      if field not in candidate:\n\n                issues.append(\n  \
+          \                  f\"第 {candidate_no} 个 candidate \"\n                \
+          \    f\"缺少 {field}\"\n                )\n\n        # -----------------------------------------------------\n\
+          \        # rank\n        # -----------------------------------------------------\n\
+          \n        rank = candidate.get(\"rank\")\n\n        if rank != candidate_no:\n\
+          \n            issues.append(\n                f\"第 {candidate_no} 个 candidate\
+          \ \"\n                f\"rank 应为 {candidate_no}\"\n            )\n\n   \
+          \     # -----------------------------------------------------\n        #\
+          \ operation\n        # -----------------------------------------------------\n\
+          \n        operation = candidate.get(\n            \"operation\"\n      \
+          \  )\n\n        if (\n            not isinstance(operation, str)\n     \
+          \       or not operation.strip()\n        ):\n\n            issues.append(\n\
+          \                f\"第 {candidate_no} 个 candidate \"\n                f\"\
+          operation 必须为非空字符串\"\n            )\n\n        else:\n\n            operation\
+          \ = operation.strip()\n\n            # 核心安全检查：\n            # 工序必须来自 allowed_operations\n\
+          \            if operation not in allowed_set:\n\n                issues.append(\n\
+          \                    f\"第 {candidate_no} 个 candidate \"\n              \
+          \      f\"工序 '{operation}' \"\n                    f\"不在 allowed_operations\
+          \ 中\"\n                )\n\n            # 禁止重复候选\n            if operation\
+          \ in seen_operations:\n\n                issues.append(\n              \
+          \      f\"候选工序重复：{operation}\"\n                )\n\n            else:\n\
+          \n                seen_operations.add(\n                    operation\n\
+          \                )\n\n        # -----------------------------------------------------\n\
+          \        # confidence_score\n        # -----------------------------------------------------\n\
+          \n        confidence_score = candidate.get(\n            \"confidence_score\"\
+          \n        )\n\n        # bool 在 Python 也是 int，\n        # 所以要单独排除\n    \
+          \    if (\n            isinstance(confidence_score, bool)\n            or\
+          \ not isinstance(\n                confidence_score,\n                int\n\
+          \            )\n        ):\n\n            issues.append(\n             \
+          \   f\"第 {candidate_no} 个 candidate \"\n                f\"confidence_score\
+          \ 必须为整数\"\n            )\n\n        elif not (\n            0 <= confidence_score\
+          \ <= 100\n        ):\n\n            issues.append(\n                f\"\
+          第 {candidate_no} 个 candidate \"\n                f\"confidence_score 必须在\
+          \ 0 到 100 之间\"\n            )\n\n        # -----------------------------------------------------\n\
+          \        # reason\n        # -----------------------------------------------------\n\
+          \n        reason = candidate.get(\"reason\")\n\n        if (\n         \
+          \   not isinstance(reason, str)\n            or not reason.strip()\n   \
+          \     ):\n\n            issues.append(\n                f\"第 {candidate_no}\
+          \ 个 candidate \"\n                f\"reason 必须为非空字符串\"\n            )\n\n\
+          \        # -----------------------------------------------------\n     \
+          \   # evidence\n        # -----------------------------------------------------\n\
+          \n        evidence = candidate.get(\n            \"evidence\"\n        )\n\
+          \n        if (\n            not isinstance(evidence, list)\n           \
+          \ or not evidence\n        ):\n\n            issues.append(\n          \
+          \      f\"第 {candidate_no} 个 candidate \"\n                f\"evidence 必须为非空数组\"\
+          \n            )\n\n        else:\n\n            for j, evidence_item in\
+          \ enumerate(\n                evidence\n            ):\n\n             \
+          \   if (\n                    not isinstance(\n                        evidence_item,\n\
+          \                        str\n                    )\n                  \
+          \  or not evidence_item.strip()\n                ):\n\n                \
+          \    issues.append(\n                        f\"第 {candidate_no} 个 candidate\
+          \ \"\n                        f\"第 {j + 1} 条 evidence \"\n             \
+          \           f\"必须为非空字符串\"\n                    )\n\n    # =========================================================\n\
+          \    # 7. missing_information\n    # =========================================================\n\
+          \n    missing_information = result.get(\n        \"missing_information\"\
+          \n    )\n\n    if not isinstance(\n        missing_information,\n      \
+          \  list\n    ):\n\n        issues.append(\n            \"missing_information\
+          \ 必须为数组\"\n        )\n\n    else:\n\n        for i, item in enumerate(\n\
+          \            missing_information\n        ):\n\n            if not isinstance(item,\
+          \ str):\n\n                issues.append(\n                    f\"missing_information\
+          \ \"\n                    f\"第 {i + 1} 项必须为字符串\"\n                )\n\n\
+          \    # =========================================================\n    #\
+          \ 8. ambiguities\n    # =========================================================\n\
+          \n    ambiguities = result.get(\n        \"ambiguities\"\n    )\n\n    if\
+          \ not isinstance(\n        ambiguities,\n        list\n    ):\n\n      \
+          \  issues.append(\n            \"ambiguities 必须为数组\"\n        )\n\n    else:\n\
+          \n        for i, item in enumerate(\n            ambiguities\n        ):\n\
+          \n            if not isinstance(item, str):\n\n                issues.append(\n\
+          \                    f\"ambiguities \"\n                    f\"第 {i + 1}\
+          \ 项必须为字符串\"\n                )\n\n    # =========================================================\n\
+          \    # 9. 人工审核\n    # =========================================================\n\
+          \n    if (\n        result.get(\"needs_human_review\")\n        is not True\n\
+          \    ):\n\n        issues.append(\n            \"needs_human_review 必须为\
+          \ true\"\n        )\n\n    # =========================================================\n\
+          \    # 10. 输出\n    # =========================================================\n\
+          \n    # 和 AI1 一样：\n    # 为避免 Dify Object 深度限制，\n    # 完整 JSON 使用 String\
+          \ 输出。\n    result_json_string = json.dumps(\n        result,\n        ensure_ascii=False,\n\
+          \        indent=2\n    )\n\n    return {\n        \"result_json\": result_json_string,\n\
+          \        \"valid\": len(issues) == 0,\n        \"issues\": issues\n    }"
+        code_language: python3
+        outputs:
+          issues:
+            children: null
+            type: array[string]
+          result_json:
+            children: null
+            type: string
+          valid:
+            children: null
+            type: boolean
+        selected: false
+        title: 代码执行
+        type: code
+        variables:
+        - value_selector:
+          - '1789383469367'
+          - text
+          value_type: string
+          variable: llm_text
+        - value_selector:
+          - '1789383463540'
+          - allowed_operations
+          value_type: string
+          variable: allowed_operations
+      height: 51
+      id: '1789384555335'
+      position:
+        x: 683
+        y: 282
+      positionAbsolute:
+        x: 683
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 0
+    viewport:
+      x: -486
+      y: 115
+      zoom: 1
+  rag_pipeline_variables: []

@@ -1,0 +1,1010 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  icon_type: emoji
+  mode: workflow
+  name: EBOM AI1
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.24@9e12eef09973667f0eaf4f082af883167e1de88740b22e71e71488d020c3778a
+    version: null
+kind: app
+version: 0.7.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        attachment_image_file_size_limit: 2
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        file_upload_limit: 50
+        image_file_batch_limit: 10
+        image_file_size_limit: 10
+        knowledge_file_size_limit: 15
+        single_chunk_attachment_limit: 10
+        skill_file_size_limit: 50
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1789372422795-source-1789372453366-target
+      selected: false
+      source: '1789372422795'
+      sourceHandle: source
+      target: '1789372453366'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1789372453366-source-1789372656052-target
+      source: '1789372453366'
+      sourceHandle: source
+      target: '1789372656052'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: end
+      id: 1789372656052-source-1789373001002-target
+      source: '1789372656052'
+      sourceHandle: source
+      target: '1789373001002'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - default: ''
+          hint: ''
+          label: rule_text
+          max_length: 10000
+          options: []
+          placeholder: ''
+          required: true
+          type: paragraph
+          variable: rule_text
+      height: 108
+      id: '1789372422795'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+      zIndex: 0
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1789372422795'
+          - rule_text
+        model:
+          completion_params:
+            temperature: 0.1
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: c158be50-f6bc-414a-bec9-78e62b481e77
+          role: system
+          text: "你是一个离散制造 PBOM 业务规则结构化助手。\n\n你的任务不是执行规则，也不是决定最终生产工序。\n\n你的唯一职责是：\n\
+            \n将用户提供的自然语言业务规则，\n\n准确转换成结构化、可供后续程序规则引擎使用的规则草案。\n\n\n====================\n\
+            \n一、基本原则\n\n====================\n\n1. 只能使用以下两类信息：\n\n   - 用户提供的业务规则文本；\n\
+            \n   - 本 System Prompt 中明确给出的“项目已知字段定义”。\n\n   除此之外，不允许使用常识补充业务逻辑。\n\n\
+            2. 不允许补充、猜测或创造原文中不存在的业务逻辑。\n\n3. 不允许根据常识推断：\n\n   - 生产工序；\n\n   - 物料关系；\n\
+            \n   - 物料上下层关系；\n\n   - 字段含义；\n\n   - 层级范围；\n\n   - 数量计算方式；\n\n   - Process_Template\
+            \ 与 SAPMbom 的关联方式。\n\n4. 如果某个业务信息没有明确给出：\n\n   - 字符串使用 null；\n\n   - 列表使用\
+            \ []；\n\n   - 如果该缺失会影响实际执行结果，则同时记录到 ambiguities。\n\n5. 必须保留原规则中的关键业务值，包括但不限于：\n\
+            \n   - 字段\n\n   - 判断值\n\n   - 物料号\n\n   - Epart\n\n   - 生产工序\n\n   - 数量\n\
+            \n   - SAPMbom 字段\n\n   - Process_Template 字段\n\n6. 必须区分以下处理对象：\n\n  \
+            \ - 当前 Part_list 行中的物料；\n\n   - Epart 本体；\n\n   - Epart 的下层物料；\n\n   -\
+            \ 对下层物料进一步筛选后得到的物料；\n\n   - 整条数据行。\n\n7. 如果一条规则中包含多个连续业务动作，\n\n   必须按照实际执行顺序拆成多个\
+            \ steps。\n\n8. steps 之间如果存在前后依赖，\n\n   必须使用 output_ref 和 input_ref 显式表示数据传递关系。\n\
+            \n9. 如果规则中存在 OR / AND 条件，\n\n   必须正确表达逻辑关系。\n\n10. 不得把示例数据误认为通用触发条件。\n\
+            \n11. 输出只是“待人工审核的规则草案”，\n\n    不能视为最终批准规则。\n\n12. needs_human_review 必须始终为\
+            \ true。\n\n\n====================\n\n二、数据源规范\n\n====================\n\
+            \n本项目主要涉及以下数据源：\n\n- Part_list\n\n- SAPMbom\n\n- Process_Template\n\n\
+            输出 JSON 时统一使用以上标准名称。\n\n以下表达均规范为：\n\nPartlist / Part_list / Part list\n\
+            \n→ \"Part_list\"\n\nSAPMbom / SAP MBOM\n\n→ \"SAPMbom\"\n\nProcess Template\
+            \ / Process_Template\n\n→ \"Process_Template\"\n\n不得因为名称写法不同而认为是不同数据源。\n\
+            \n\n====================\n\n三、项目已知字段定义\n\n====================\n\n以下字段属于本项目已确认的数据结构，\n\
+            \n可以直接使用，不视为模型推测。\n\n\nPart_list：\n\n- E\n\n- F\n\n\nSAPMbom：\n\n- Component\
+            \ number\n\n- Object description\n\n- Comp. Qty (CUn)\n\n- Component Unit\n\
+            \n- Level\n\n- Procurement type\n\n- Special procurement\n\n- MRP controller\n\
+            \n- ItemEFN\n\n- LVEFN\n\n\nProcess_Template：\n\n- 物料号\n\n- 物料名称\n\n-\
+            \ BOM 数量\n\n- 序号\n\n- 生产车间\n\n- 产品类型\n\n- 生产工位\n\n- 生产工序\n\n- 生产工步\n\n\
+            - Component_工时\n\n- E_part\n\n- E_part_工时\n\n\n字段映射规则：\n\n1. 如果原文明确写“E\
+            \ 列”：\n\n   field 或 source_field 使用 \"E\"。\n\n2. 如果原文明确写“F 列”：\n\n   field\
+            \ 或 source_field 使用 \"F\"。\n\n3. 如果原文明确写“SAP 物料号”或\n\n   明确指 SAPMbom 中的物料号码：\n\
+            \n   使用 \"Component number\"。\n\n4. 如果原文明确写“SAP 数量”或\n\n   明确指 SAPMbom\
+            \ 中的物料数量：\n\n   使用 \"Comp. Qty (CUn)\"。\n\n5. 如果原文明确写 SAP 物料描述：\n\n  \
+            \ 使用 \"Object description\"。\n\n6. 如果原文明确写“模板数量”或“BOM 数量”：\n\n   使用 Process_Template\
+            \ 的 \"BOM 数量\"。\n\n7. 如果原文明确写模板中的生产工序：\n\n   使用 \"生产工序\"。\n\n以上只是字段名称规范化，\n\
+            \n不得据此自动补充新的业务条件、关联关系或判断逻辑。\n\n\n====================\n\n四、允许的 action_type\n\
+            \n====================\n\n允许的 action_type：\n\n- identify_material\n\n\
+            \  从指定字段识别物料、Epart 或物料类别。\n\n- assign_operation\n\n  将指定处理对象分配到生产工序。\n\
+            \n- select_children\n\n  根据某个 Epart 查询其 SAPMbom 下层物料。\n\n- filter_materials\n\
+            \n  对已有物料记录集合进一步筛选。\n\n- mark_status\n\n  按原规则对记录进行状态或特殊标记。\n\n- quantity_validation\n\
+            \n  对一个或多个数量条件进行判断或校验。\n\n- other\n\n  原文明确存在某个动作，\n\n  但无法归入以上类型。\n\n\
+            \n====================\n\n五、conditions 与 steps 的区别\n\n====================\n\
+            \nconditions 只描述：\n\n“什么时候触发这条业务规则”。\n\n\n例如：\n\nE 列包含 \"PD\"\n\n属于 conditions。\n\
+            \n\nsteps 描述：\n\n“规则触发后，按照什么顺序执行哪些业务动作”。\n\n\n例如：\n\n1. 从 F 列取得 PD Epart\n\
+            \n2. 将 PD 本体分配到模块总装\n\n3. 根据 PD Epart 查询 SAPMbom\n\n4. 筛选符合条件的 M16 物料\n\
+            \n5. 将筛选结果分配到模块总装\n\n属于 steps。\n\n\n不得把 steps 中的处理中间条件全部错误地提升为顶层 conditions。\n\
+            \n\n多个候选值规则：\n\n如果同一个字段允许多个值，\n\n不得生成：\n\n字段 = A AND 字段 = B\n\n应使用：\n\n\
+            {\n\n  \"field\": \"字段\",\n\n  \"operator\": \"in\",\n\n  \"value\": [\"\
+            A\", \"B\"]\n\n}\n\n除非原文明确要求两个条件同时对应两个不同记录或对象。\n\n\n====================\n\
+            \n六、conditions 规则\n\n====================\n\n每个 condition 必须包含：\n\n- source_table\n\
+            \n- field\n\n- operator\n\n- value\n\n\noperator 只能使用：\n\n- equals\n\n\
+            - contains\n\n- starts_with\n\n- ends_with\n\n- in\n\n- not_equals\n\n\
+            - greater_than\n\n- less_than\n\n- greater_or_equal\n\n- less_or_equal\n\
+            \n- other\n\n\nvalue 可以为：\n\n- 字符串\n\n- 数字\n\n- 数组\n\n- null\n\n\n关于 source_table\
+            \ 和 field：\n\n- source_table 和 field 两个键都必须保留，不得省略；\n\n- 如果原文明确给出了业务触发概念，\n\
+            \  但没有明确其对应的实际数据字段，\n  field 必须使用 null，\n  并将字段映射缺失记录到 ambiguities；\n\n\
+            - 如果连数据源也无法确定，\n  source_table 使用 null，\n  并记录到 ambiguities；\n\n- 不得为了让条件“看起来完整”而自行创造未经确认的字段名；\n\
+            \n- 对于 Part_list，\n  当前已确认字段只有 E 和 F。\n  如果原文仅写“Epart 号码”，\n  但没有说明 Epart\
+            \ 号码对应 E、F 或其他字段，\n  不得输出 \"Epart 号码\" 作为已确认 field，\n  应输出：\n\n  \"field\"\
+            : null\n\n  并在 ambiguities 中说明：\n  “Epart 号码对应 Part_list 中哪个实际字段未明确”。\n\
+            \n- condition 中出现 null 不代表 JSON 结构无效。\n  只要字段键完整、类型合法，\n  该规则草案仍可视为结构有效，\n\
+            \  但必须保持 needs_human_review = true。\n\n\ntrigger_logic 只能使用：\n\n- SINGLE\n\
+            \n- AND\n\n- OR\n\n\n当只有一个 condition 时：\n\ntrigger_logic = \"SINGLE\"\n\
+            \n\n====================\n\n七、input_ref / output_ref 规则\n\n====================\n\
+            \n当某一步产生一个供后续步骤使用的对象时，\n\n必须设置 output_ref。\n\n\n例如：\n\n从 F 列取得 PD Epart：\n\
+            \n\"output_ref\": \"pd_epart\"\n\n\n后续步骤使用这个对象：\n\n\"input_ref\": \"pd_epart\"\
+            \n\n\n再例如：\n\n查询 PD Epart 下层物料：\n\n\"output_ref\": \"pd_children\"\n\n\
+            \n后续筛选步骤：\n\n\"input_ref\": \"pd_children\"\n\n\noutput_ref 必须：\n\n- 使用英文；\n\
+            \n- 使用 snake_case；\n\n- 在当前规则中唯一；\n\n- 能表达对象含义。\n\n\n例如：\n\n- current_material\n\
+            \n- mechanism_lock\n\n- density_meter\n\n- linkage_epart\n\n- linkage_children\n\
+            \n- pd_epart\n\n- pd_children\n\n- m16_fasteners\n\n\n不得让 input_ref 引用尚未产生的\
+            \ output_ref。\n\n\n关于 output_ref 所代表的数据：\n\n当 select_children 或 filter_materials\
+            \ 产生 output_ref 时，\n\noutput_ref 默认代表：\n\n完整物料记录或完整物料记录集合，\n\n而不是仅代表物料号码。\n\
+            \n\n除非原规则明确要求删除、替换或重新计算某字段，\n\n否则原记录中的：\n\n- 物料号\n\n- 数量\n\n- 描述\n\n-\
+            \ 层级\n\n- 其他业务字段\n\n均随记录继续传递。\n\n\n因此，如果原文要求：\n\n“将筛选出的物料号及其对应数量继续分配”\n\
+            \n不需要创建单独的数量传递步骤。\n\n后续步骤直接通过 input_ref 使用完整记录集合即可。\n\n\n只有当原规则要求：\n\n\
+            - 比较数量；\n\n- 校验数量；\n\n- 判断数量；\n\n- 替换数量；\n\n- 计算数量；\n\n才使用 quantity_validation。\n\
+            \n\n====================\n\n八、select_children 规则\n\n====================\n\
+            \n当规则要求根据 Epart 查询 SAPMbom 下层物料时，\n\n使用：\n\n\"action_type\": \"select_children\"\
+            \n\n\nchild_scope 只能使用：\n\n- \"direct_children\"\n\n- \"all_descendants\"\
+            \n\n- null\n\n\n定义：\n\ndirect_children：\n\n原文明确要求仅处理直接下一层。\n\n\nall_descendants：\n\
+            \n原文明确要求处理全部后代层级。\n\n\nnull：\n\n原文只写“下层物料”，\n\n但未明确是直接下一层还是所有层级。\n\n\n\
+            如果原文没有明确层级范围：\n\n不得自行选择 direct_children 或 all_descendants。\n\n必须：\n\n\"\
+            child_scope\": null\n\n并将该问题记录到 ambiguities。\n\n\n====================\n\
+            \n九、filter_materials 规则\n\n====================\n\n当规则需要对已有物料集合继续筛选时，\n\
+            \n使用：\n\n\"action_type\": \"filter_materials\"\n\n\ninput_ref：\n\n必须引用此前已经生成的物料记录或记录集合。\n\
+            \n\nfilters：\n\n只允许包含原规则明确给出的筛选条件。\n\n\n每个 filter 必须包含：\n\n- field\n\n\
+            - operator\n\n- value\n\n\nfilter_logic 只能使用：\n\n- SINGLE\n\n- AND\n\n\
+            - OR\n\n- null\n\n\n例如：\n\n原文明确要求：\n\nObject description 包含 M16\n\n应输出：\n\
+            \n{\n\n  \"field\": \"Object description\",\n\n  \"operator\": \"contains\"\
+            ,\n\n  \"value\": \"M16\"\n\n}\n\n\n如果原文还要求：\n\n“筛选螺栓、垫片和螺母”\n\n但没有明确依据哪个字段判断这些物料类别，\n\
+            \n不得自行创建：\n\nmaterial_category\n\nmaterial_type\n\ncategory\n\n等字段。\n\n\
+            \n此时：\n\n只保留原文明确可执行的筛选条件，\n\n并将：\n\n“缺少螺栓、垫片、螺母的识别依据”\n\n记录到 ambiguities。\n\
+            \n\n====================\n\n十、quantity_validation 规则\n\n====================\n\
+            \n当规则要求判断、比较或校验数量时，\n\n使用：\n\n\"action_type\": \"quantity_validation\"\
+            \n\n\n数量判断不得只写在 description 中。\n\n必须使用 validation 字段表达可执行判断。\n\n\nvalidation\
+            \ 的固定结构为：\n\n{\n\n  \"logic\": \"SINGLE 或 AND 或 OR\",\n\n  \"checks\"\
+            : [\n\n    {\n\n      \"left\": {\n\n        \"source_table\": \"数据源名称\"\
+            ,\n\n        \"field\": \"数量字段\"\n\n      },\n\n      \"operator\": \"\
+            equals\",\n\n      \"right\": {\n\n        \"type\": \"constant\",\n\n\
+            \        \"source_table\": null,\n\n        \"field\": null,\n\n     \
+            \   \"value\": 8\n\n      }\n\n    }\n\n  ],\n\n  \"on_pass\": \"通过时的业务结论\"\
+            ,\n\n  \"on_fail\": \"不通过时的业务结论\"\n\n}\n\n\nvalidation.logic 只能使用：\n\n\
+            - SINGLE\n\n- AND\n\n- OR\n\n\n每个 check.operator 只能使用：\n\n- equals\n\n\
+            - not_equals\n\n- greater_than\n\n- less_than\n\n- greater_or_equal\n\n\
+            - less_or_equal\n\n- other\n\n\nright.type 只能使用：\n\n- constant\n\n- field\n\
+            \n\n关于 on_pass 和 on_fail：\n\n- on_pass 和 on_fail 两个字段都必须保留，不得省略；\n\n-\
+            \ 如果原文明确说明校验通过后的业务结论，则按原文填写 on_pass；\n\n- 如果原文明确说明校验失败后的业务结论，则按原文填写 on_fail；\n\
+            \n- 如果原文没有明确给出某一结果，该字段必须使用 null，不得自行创造业务结论；\n\n- 不得为了让 JSON 看起来完整而自行填写：\n\
+            \  \"correct\"、\"quantity_mismatch\"、\"error\"、\"pass\"、\"fail\"\n  等原文不存在的结论；\n\
+            \n- 如果某个结果为 null，且该缺失会影响后续业务执行，\n  应同时记录到 ambiguities。\n\n\n当 right.type\
+            \ = \"constant\" 时：\n\n- value 必须填写；\n\n- source_table = null；\n\n- field\
+            \ = null。\n\n\n例如：\n\n{\n\n  \"type\": \"constant\",\n\n  \"source_table\"\
+            : null,\n\n  \"field\": null,\n\n  \"value\": 8\n\n}\n\n\n当 right.type\
+            \ = \"field\" 时：\n\n- source_table 必须填写；\n\n- field 必须填写；\n\n- value =\
+            \ null。\n\n\n例如：\n\n{\n\n  \"type\": \"field\",\n\n  \"source_table\"\
+            : \"Process_Template\",\n\n  \"field\": \"BOM 数量\",\n\n  \"value\": null\n\
+            \n}\n\n\n如果数量规则包含多个同时成立的数量要求，\n\n必须放到同一个 validation.checks 中，\n\n并使用：\n\
+            \n\"logic\": \"AND\"\n\n\n例如某条规则表示：\n\nSAPMbom.Comp. Qty (CUn) = 16\n\n\
+            并且：\n\nProcess_Template.BOM 数量 = 8\n\n才视为正确。\n\n\n应表达为：\n\n{\n\n  \"logic\"\
+            : \"AND\",\n\n  \"checks\": [\n\n    {\n\n      \"left\": {\n\n      \
+            \  \"source_table\": \"SAPMbom\",\n\n        \"field\": \"Comp. Qty (CUn)\"\
+            \n\n      },\n\n      \"operator\": \"equals\",\n\n      \"right\": {\n\
+            \n        \"type\": \"constant\",\n\n        \"source_table\": null,\n\
+            \n        \"field\": null,\n\n        \"value\": 16\n\n      }\n\n   \
+            \ },\n\n    {\n\n      \"left\": {\n\n        \"source_table\": \"Process_Template\"\
+            ,\n\n        \"field\": \"BOM 数量\"\n\n      },\n\n      \"operator\":\
+            \ \"equals\",\n\n      \"right\": {\n\n        \"type\": \"constant\"\
+            ,\n\n        \"source_table\": null,\n\n        \"field\": null,\n\n \
+            \       \"value\": 8\n\n      }\n\n    }\n\n  ],\n\n  \"on_pass\": \"\
+            视为正确\",\n\n  \"on_fail\": null\n\n}\n\n\n不得把：\n\n物料号 A\n\n物料号 B\n\n错误表示为：\n\
+            \n物料号 = A AND 物料号 = B\n\n\n如果多个物料适用同一数量规则，\n\n应使用：\n\n{\n\n  \"field\"\
+            : \"Component number\",\n\n  \"operator\": \"in\",\n\n  \"value\": [\"\
+            A\", \"B\"]\n\n}\n\n\n====================\n\n十一、mark_status 规则\n\n====================\n\
+            \n只有原文明确要求：\n\n- 标记状态；\n\n- 特殊标记；\n\n- 行级标识；\n\n- 颜色状态；\n\n时才使用：\n\n\"\
+            action_type\": \"mark_status\"\n\n\n不得因为 quantity_validation 的结果为“正确”\n\
+            \n就自动新增 mark_status。\n\n如果原文只是说明：\n\n“视为正确”\n\n应使用 quantity_validation.validation.on_pass\
+            \ 表达，\n\n不需要额外增加 mark_status step。\n\n\n对于原文明确定义的“判断结果”和“特殊标记”：\n\n如果原文同时明确给出：\n\
+            \n- 某记录的业务状态或判断结果；\n- 对该记录执行的特殊标记；\n\n则这两项都属于已明确业务信息，\n不得因为“没有说明写入哪个数据库字段”而加入\
+            \ ambiguity。\n\n可以拆成两个 mark_status step，\n并按原文值填写 operation。\n\n例如原文明确：\n\
+            \n“该选型为空物料，并使用黄色特殊标记该数据行。”\n\n可以表达为：\n\nS1：\n- action_type = \"mark_status\"\
+            \n- operation = \"空物料\"\n- description = \"将该选型标记为空物料\"\n\nS2：\n- action_type\
+            \ = \"mark_status\"\n- operation = \"黄色特殊标记\"\n- description = \"使用黄色特殊标记该数据行\"\
+            \n\n不得追问“空物料应写入哪个系统字段”，\n除非原规则的实际执行确实依赖该字段。\n\n\n====================\n\
+            \n十二、ambiguities 规则\n\n====================\n\n只有当原始业务规则本身存在：\n\n“会改变规则实际执行结果的不确定性”\n\
+            \n时，才允许写入 ambiguities。\n\n\n不要为了体现谨慎而主动制造歧义。\n\n\n以下情况不属于业务歧义：\n\n1. 原文明确指出\
+            \ Excel 列号，\n\n   但没有提供数据库字段名。\n\n2. 已经可以根据本 System Prompt 的\n\n   “项目已知字段定义”\n\
+            \n   确定标准字段名称。\n\n3. 原文明确说明某物料属于某类别，\n\n   不需要追问最终写入哪个数据库字段。\n\n4. 原文已经明确给出生产工序，\n\
+            \n   不需要追问该工序来自哪里。\n\n5. 不需要追问规则执行结果最终写入哪张表。\n\n6. 不需要讨论：\n\n   - 数据库设计；\n\
+            \n   - API；\n\n   - 程序代码；\n\n   - 系统架构；\n\n   - 前端展示。\n\n7. 如果规则已经明确给出：\n\
+            \n   - 触发条件；\n\n   - 处理对象；\n\n   - 执行动作；\n\n   不得为了谨慎继续制造无关问题。\n\n8. 如果原文使用“原因”“说明”“因为”“即”等内容\n\
+            \   解释某条业务规则为什么成立，\n\n   默认将其视为规则依据或业务说明，\n\n   不得自动转化成新的执行动作。\n\n9. 只有当原文明确定义需要：\n\
+            \n   - 执行；\n   - 分配；\n   - 删除；\n   - 标记；\n   - 筛选；\n   - 校验；\n\n   等处理要求时，\n\
+            \n   才生成对应 step。\n\n10. 不得因为解释性文字中提到某个工位、物料或结果，\n    就额外制造“缺少工位名称”“缺少执行动作”等\
+            \ ambiguity，\n    除非这些信息确实是执行原规则所必需的。\n\n\n以下属于真实业务歧义：\n\n- 同一条件可能对应不同工序；\n\
+            \n- 无法判断应该处理当前物料还是下层物料；\n\n- AND / OR 关系不明确；\n\n- “下层物料”没有明确是直接下一层还是全部层级；\n\
+            \n- 数量规则存在两个互相冲突的解释；\n\n- 某筛选条件要求识别某类物料，\n\n  但没有明确可执行的识别依据；\n\n- 不知道两个数据源的记录应该如何对应，\n\
+            \n  且该关联关系是执行规则所必需的；\n\n- 原文缺少执行某个业务动作必须的信息。\n\n\n====================\n\
+            \n十三、输出 JSON\n\n====================\n\n你必须只输出合法 JSON。\n\n禁止输出：\n\n- Markdown\n\
+            \n- ```json 代码块\n\n- 分析过程\n\n- 思考过程\n\n- 解释文字\n\n- JSON 之外的任何内容\n\n\n\
+            JSON 必须严格使用以下结构：\n\n{\n\n  \"rule_name\": \"规则名称\",\n\n  \"source_tables\"\
+            : [\n\n    \"数据源名称\"\n\n  ],\n\n  \"trigger_logic\": \"SINGLE\",\n\n \
+            \ \"conditions\": [\n\n    {\n\n      \"source_table\": \"Part_list\"\
+            ,\n\n      \"field\": \"E\",\n\n      \"operator\": \"contains\",\n\n\
+            \      \"value\": \"PD\"\n\n    }\n\n  ],\n\n  \"steps\": [\n\n    {\n\
+            \n      \"step_id\": \"S1\",\n\n      \"action_type\": \"identify_material\"\
+            ,\n\n      \"source_table\": \"Part_list\",\n\n      \"source_field\"\
+            : \"F\",\n\n      \"input_ref\": null,\n\n      \"child_scope\": null,\n\
+            \n      \"filter_logic\": null,\n\n      \"filters\": [],\n\n      \"\
+            output_ref\": \"pd_epart\",\n\n      \"operation\": null,\n\n      \"\
+            validation\": null,\n\n      \"description\": \"从触发行 F 列取得 PD Epart\"\n\
+            \n    },\n\n    {\n\n      \"step_id\": \"S2\",\n\n      \"action_type\"\
+            : \"assign_operation\",\n\n      \"source_table\": null,\n\n      \"source_field\"\
+            : null,\n\n      \"input_ref\": \"pd_epart\",\n\n      \"child_scope\"\
+            : null,\n\n      \"filter_logic\": null,\n\n      \"filters\": [],\n\n\
+            \      \"output_ref\": null,\n\n      \"operation\": \"420kV_DS_模块总装\"\
+            ,\n\n      \"validation\": null,\n\n      \"description\": \"将 PD 本体分配到指定生产工序\"\
+            \n\n    }\n\n  ],\n\n  \"ambiguities\": [],\n\n  \"needs_human_review\"\
+            : true\n\n}\n\n\n====================\n\n十四、每个 step 的字段要求\n\n====================\n\
+            \n每个 step 必须包含以下全部字段：\n\n- step_id\n\n- action_type\n\n- source_table\n\
+            \n- source_field\n\n- input_ref\n\n- child_scope\n\n- filter_logic\n\n\
+            - filters\n\n- output_ref\n\n- operation\n\n- validation\n\n- description\n\
+            \n\n没有适用值时：\n\n- 字符串或对象使用 null；\n\n- 列表使用 []；\n\n不得直接省略字段。\n\n\nstep_id\
+            \ 必须严格按照执行顺序：\n\nS1\n\nS2\n\nS3\n\nS4\n\n...\n\n不得跳号。\n\n\n====================\n\
+            \n十五、不同 action_type 的字段要求\n\n====================\n\nidentify_material：\n\
+            \n- 用于从当前数据源识别一个对象；\n\n- source_table 必须尽量明确；\n\n- source_field 必须尽量明确；\n\
+            \n- 如果识别结果后续还要使用，必须设置 output_ref；\n\n- validation 通常为 null。\n\n\nassign_operation：\n\
+            \n- input_ref 必须指向前面已经得到的处理对象；\n\n- operation 必须是原文明确给出的生产工序；\n\n- 不得自行生成工序名称；\n\
+            \n- validation = null。\n\n\nselect_children：\n\n- input_ref 必须指向前面得到的\
+            \ Epart；\n\n- source_table 通常为 \"SAPMbom\"；\n\n- child_scope 必须严格依据原文；\n\
+            \n- 如果查询结果后续还要使用，必须设置 output_ref；\n\n- validation = null。\n\n\nfilter_materials：\n\
+            \n- input_ref 必须引用已有物料记录集合；\n\n- filters 只能包含原文明确给出的筛选条件；\n\n- filter_logic\
+            \ 必须与 filters 数量和逻辑一致；\n\n- 如果结果继续用于后续步骤，应设置 output_ref；\n\n- validation\
+            \ = null。\n\n\nquantity_validation：\n\n- 必须设置 validation；\n\n- validation\
+            \ 不得为 null；\n\n- 数量判断必须放入 validation.checks；\n\n- 不得仅在 description 中描述数量逻辑；\n\
+            \n- validation 必须同时包含 on_pass 和 on_fail 字段；\n\n- on_pass / on_fail 可以为字符串或\
+            \ null；\n\n- 原文未明确某一结果时必须使用 null，不得自行补充。\n\n\nmark_status：\n\n- 只有原文明确给出业务状态、判断结果或特殊标记时才能使用；\n\
+            \n- operation 用于保存原文明确给出的状态值或标记值，\n  例如 \"空物料\"、\"黄色特殊标记\"；\n\n- 如果原文同时明确给出一个业务状态和一个特殊标记，\n\
+            \  应按执行含义拆成两个 mark_status step；\n\n- 不得根据模型自己的判断新增状态或标记。\n\n\n====================\n\
+            \n十六、人工审核\n\n====================\n\n无论规则是否清晰：\n\n\"needs_human_review\"\
+            : true\n\n必须始终成立。\n\n\nAI 输出只能作为规则草案。\n\n不得表示规则已经：\n\n- 批准；\n\n- 发布；\n\
+            \n- 生效；\n\n- 可以直接投入生产。"
+        - id: 17063fd5-9c8d-4de1-aa30-25f7b3253047
+          role: user
+          text: '请将下面的 PBOM 业务规则转换为结构化规则草案。
+
+
+            原始业务规则：
+
+
+            {{#1789372422795.rule_text#}}
+
+
+            要求：
+
+
+            - 严格依据原文
+
+            - 不得自行补充业务逻辑
+
+            - 示例不能作为新的业务规则
+
+            - 如果规则存在歧义，请记录在 ambiguities 中
+
+            - needs_human_review 必须为 true
+
+
+
+            '
+        reasoning_format: separated
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              actions:
+                items:
+                  properties:
+                    action_type:
+                      enum:
+                      - assign_operation
+                      - mark_status
+                      - identify_material
+                      - select_children
+                      - filter_materials
+                      - quantity_validation
+                      - other
+                      type: string
+                    description:
+                      type: string
+                    operation:
+                      type:
+                      - string
+                      - 'null'
+                  required:
+                  - action_type
+                  - operation
+                  - description
+                  type: object
+                type: array
+              ambiguities:
+                items:
+                  type: string
+                type: array
+              conditions:
+                items:
+                  properties:
+                    field:
+                      type:
+                      - string
+                      - 'null'
+                    operator:
+                      enum:
+                      - equals
+                      - contains
+                      - ends_with
+                      - starts_with
+                      - in
+                      - not_equals
+                      - other
+                      type: string
+                    source_table:
+                      type:
+                      - string
+                      - 'null'
+                    value:
+                      type:
+                      - string
+                      - 'null'
+                  required:
+                  - source_table
+                  - field
+                  - operator
+                  - value
+                  type: object
+                type: array
+              needs_human_review:
+                type: boolean
+              rule_name:
+                type: string
+              source_tables:
+                items:
+                  type: string
+                type: array
+              target:
+                properties:
+                  source_field:
+                    type:
+                    - string
+                    - 'null'
+                  type:
+                    enum:
+                    - current_material
+                    - epart
+                    - epart_children
+                    - filtered_children
+                    - row
+                    - unknown
+                    type: string
+                required:
+                - type
+                - source_field
+                type: object
+              trigger_logic:
+                enum:
+                - AND
+                - OR
+                - SINGLE
+                type: string
+            required:
+            - rule_name
+            - source_tables
+            - trigger_logic
+            - conditions
+            - target
+            - actions
+            - ambiguities
+            - needs_human_review
+            type: object
+        structured_output_enabled: false
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1789372453366'
+      position:
+        x: 382
+        y: 282
+      positionAbsolute:
+        x: 382
+        y: 282
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 0
+    - data:
+        code: "import json\nimport re\n\n\ndef main(llm_text: str):\n    issues =\
+          \ []\n\n    text = (llm_text or \"\").strip()\n\n    # =========================================================\n\
+          \    # 0. 清理 LLM 输出\n    # =========================================================\n\
+          \n    # 清理 DeepSeek 可能混入的 <think>...</think>\n    text = re.sub(\n     \
+          \   r\"<think>.*?</think>\",\n        \"\",\n        text,\n        flags=re.DOTALL\
+          \ | re.IGNORECASE\n    ).strip()\n\n    # 清理 Markdown code fence\n    text\
+          \ = re.sub(\n        r\"^```json\\s*\",\n        \"\",\n        text,\n\
+          \        flags=re.IGNORECASE\n    )\n    text = re.sub(r\"^```\\s*\", \"\
+          \", text)\n    text = re.sub(r\"\\s*```$\", \"\", text).strip()\n\n    #\
+          \ =========================================================\n    # 1. JSON\
+          \ 解析\n    # =========================================================\n\n\
+          \    try:\n        rule = json.loads(text)\n    except Exception as e:\n\
+          \        return {\n            \"rule_json\": \"{}\",\n            \"valid\"\
+          : False,\n            \"issues\": [\n                f\"LLM 输出无法解析为 JSON：{str(e)}\"\
+          \n            ]\n        }\n\n    if not isinstance(rule, dict):\n     \
+          \   return {\n            \"rule_json\": \"{}\",\n            \"valid\"\
+          : False,\n            \"issues\": [\n                \"LLM 输出不是 JSON Object\"\
+          \n            ]\n        }\n\n    # =========================================================\n\
+          \    # 2. 顶层字段检查\n    # =========================================================\n\
+          \n    required_top_fields = [\n        \"rule_name\",\n        \"source_tables\"\
+          ,\n        \"trigger_logic\",\n        \"conditions\",\n        \"steps\"\
+          ,\n        \"ambiguities\",\n        \"needs_human_review\"\n    ]\n\n \
+          \   for field in required_top_fields:\n        if field not in rule:\n \
+          \           issues.append(\n                f\"缺少顶层字段 {field}\"\n      \
+          \      )\n\n    if not rule.get(\"rule_name\"):\n        issues.append(\n\
+          \            \"rule_name 不能为空\"\n        )\n\n    source_tables = rule.get(\"\
+          source_tables\")\n\n    if not isinstance(source_tables, list) or not source_tables:\n\
+          \        issues.append(\n            \"source_tables 必须为非空数组\"\n       \
+          \ )\n    else:\n        for i, table in enumerate(source_tables):\n    \
+          \        if not isinstance(table, str) or not table.strip():\n         \
+          \       issues.append(\n                    f\"source_tables 第 {i + 1} 项必须为非空字符串\"\
+          \n                )\n\n    # =========================================================\n\
+          \    # 3. trigger_logic\n    # =========================================================\n\
+          \n    allowed_trigger_logic = {\n        \"SINGLE\",\n        \"AND\",\n\
+          \        \"OR\"\n    }\n\n    trigger_logic = rule.get(\"trigger_logic\"\
+          )\n\n    if trigger_logic not in allowed_trigger_logic:\n        issues.append(\n\
+          \            \"trigger_logic 必须为 SINGLE / AND / OR\"\n        )\n\n    #\
+          \ =========================================================\n    # 4. conditions\n\
+          \    # =========================================================\n\n   \
+          \ conditions = rule.get(\"conditions\")\n\n    allowed_operators = {\n \
+          \       \"equals\",\n        \"contains\",\n        \"starts_with\",\n \
+          \       \"ends_with\",\n        \"in\",\n        \"not_equals\",\n     \
+          \   \"greater_than\",\n        \"less_than\",\n        \"greater_or_equal\"\
+          ,\n        \"less_or_equal\",\n        \"other\"\n    }\n\n    if not isinstance(conditions,\
+          \ list) or not conditions:\n        issues.append(\n            \"conditions\
+          \ 必须为非空数组\"\n        )\n\n    else:\n        for i, condition in enumerate(conditions):\n\
+          \n            condition_no = i + 1\n\n            if not isinstance(condition,\
+          \ dict):\n                issues.append(\n                    f\"第 {condition_no}\
+          \ 个 condition 格式错误\"\n                )\n                continue\n\n  \
+          \          required_condition_fields = [\n                \"source_table\"\
+          ,\n                \"field\",\n                \"operator\",\n         \
+          \       \"value\"\n            ]\n\n            for field in required_condition_fields:\n\
+          \                if field not in condition:\n                    issues.append(\n\
+          \                        f\"第 {condition_no} 个 condition 缺少 {field}\"\n\
+          \                    )\n\n            source_table = condition.get(\"source_table\"\
+          )\n            field_name = condition.get(\"field\")\n            operator\
+          \ = condition.get(\"operator\")\n\n            # source_table / field 字段必须存在，但值允许为\
+          \ null。\n            # AI1 输出的是“待人工审核规则草案”，当原规则明确存在\n            # 某个业务条件、但没有给出可执行字段映射时，应保留\
+          \ null，\n            # 并通过 ambiguities 交给人工确认，而不是判定 JSON 结构非法。\n       \
+          \     if (\n                source_table is not None\n                and\
+          \ (\n                    not isinstance(source_table, str)\n           \
+          \         or not source_table.strip()\n                )\n            ):\n\
+          \                issues.append(\n                    f\"第 {condition_no}\
+          \ 个 condition \"\n                    f\"source_table 必须为非空字符串或 null\"\n\
+          \                )\n\n            if (\n                field_name is not\
+          \ None\n                and (\n                    not isinstance(field_name,\
+          \ str)\n                    or not field_name.strip()\n                )\n\
+          \            ):\n                issues.append(\n                    f\"\
+          第 {condition_no} 个 condition \"\n                    f\"field 必须为非空字符串或\
+          \ null\"\n                )\n\n            if operator not in allowed_operators:\n\
+          \                issues.append(\n                    f\"第 {condition_no}\
+          \ 个 condition \"\n                    f\"operator 非法：{operator}\"\n    \
+          \            )\n\n            # in 必须对应数组\n            if operator == \"\
+          in\":\n                value = condition.get(\"value\")\n\n            \
+          \    if not isinstance(value, list) or not value:\n                    issues.append(\n\
+          \                        f\"第 {condition_no} 个 condition \"\n          \
+          \              f\"operator 为 in 时 value 必须为非空数组\"\n                    )\n\
+          \n    # trigger_logic 与条件数量的基本一致性\n    if isinstance(conditions, list) and\
+          \ conditions:\n\n        if len(conditions) == 1 and trigger_logic != \"\
+          SINGLE\":\n            issues.append(\n                \"只有一个 condition\
+          \ 时 trigger_logic 应为 SINGLE\"\n            )\n\n        if len(conditions)\
+          \ > 1 and trigger_logic == \"SINGLE\":\n            issues.append(\n   \
+          \             \"存在多个 conditions 时 trigger_logic 不能为 SINGLE\"\n         \
+          \   )\n\n    # =========================================================\n\
+          \    # 5. steps\n    # =========================================================\n\
+          \n    steps = rule.get(\"steps\")\n\n    allowed_action_types = {\n    \
+          \    \"identify_material\",\n        \"assign_operation\",\n        \"select_children\"\
+          ,\n        \"filter_materials\",\n        \"mark_status\",\n        \"quantity_validation\"\
+          ,\n        \"other\"\n    }\n\n    allowed_child_scopes = {\n        None,\n\
+          \        \"direct_children\",\n        \"all_descendants\"\n    }\n\n  \
+          \  allowed_filter_logic = {\n        None,\n        \"SINGLE\",\n      \
+          \  \"AND\",\n        \"OR\"\n    }\n\n    required_step_fields = [\n   \
+          \     \"step_id\",\n        \"action_type\",\n        \"source_table\",\n\
+          \        \"source_field\",\n        \"input_ref\",\n        \"child_scope\"\
+          ,\n        \"filter_logic\",\n        \"filters\",\n        \"output_ref\"\
+          ,\n        \"operation\",\n        \"validation\",\n        \"description\"\
+          \n    ]\n\n    if not isinstance(steps, list) or not steps:\n        issues.append(\n\
+          \            \"steps 必须为非空数组\"\n        )\n\n    else:\n        step_ids\
+          \ = set()\n        available_refs = set()\n\n        for i, step in enumerate(steps):\n\
+          \n            step_number = i + 1\n            expected_id = f\"S{step_number}\"\
+          \n\n            if not isinstance(step, dict):\n                issues.append(\n\
+          \                    f\"第 {step_number} 个 step 格式错误\"\n                )\n\
+          \                continue\n\n            # -------------------------------------------------\n\
+          \            # 5.1 必须字段\n            # -------------------------------------------------\n\
+          \n            for field in required_step_fields:\n                if field\
+          \ not in step:\n                    issues.append(\n                   \
+          \     f\"第 {step_number} 个 step 缺少 {field}\"\n                    )\n\n\
+          \            step_id = step.get(\"step_id\")\n            action_type =\
+          \ step.get(\"action_type\")\n            input_ref = step.get(\"input_ref\"\
+          )\n            output_ref = step.get(\"output_ref\")\n            child_scope\
+          \ = step.get(\"child_scope\")\n            filter_logic = step.get(\"filter_logic\"\
+          )\n            filters = step.get(\"filters\")\n            validation =\
+          \ step.get(\"validation\")\n\n            # -------------------------------------------------\n\
+          \            # 5.2 step_id\n            # -------------------------------------------------\n\
+          \n            if step_id != expected_id:\n                issues.append(\n\
+          \                    f\"第 {step_number} 个 step \"\n                    f\"\
+          step_id 应为 {expected_id}\"\n                )\n\n            if step_id\
+          \ in step_ids:\n                issues.append(\n                    f\"\
+          step_id 重复：{step_id}\"\n                )\n\n            if step_id:\n \
+          \               step_ids.add(step_id)\n\n            display_step_id = step_id\
+          \ or expected_id\n\n            # -------------------------------------------------\n\
+          \            # 5.3 action_type\n            # -------------------------------------------------\n\
+          \n            if action_type not in allowed_action_types:\n            \
+          \    issues.append(\n                    f\"{display_step_id} \"\n     \
+          \               f\"action_type 非法：{action_type}\"\n                )\n\n\
+          \            # -------------------------------------------------\n     \
+          \       # 5.4 input_ref\n            # -------------------------------------------------\n\
+          \n            if input_ref is not None:\n                if input_ref not\
+          \ in available_refs:\n                    issues.append(\n             \
+          \           f\"{display_step_id} \"\n                        f\"input_ref\
+          \ '{input_ref}' \"\n                        f\"没有引用此前产生的 output_ref\"\n\
+          \                    )\n\n            # -------------------------------------------------\n\
+          \            # 5.5 child_scope\n            # -------------------------------------------------\n\
+          \n            if child_scope not in allowed_child_scopes:\n            \
+          \    issues.append(\n                    f\"{display_step_id} \"\n     \
+          \               f\"child_scope 非法：{child_scope}\"\n                )\n\n\
+          \            # -------------------------------------------------\n     \
+          \       # 5.6 filter_logic\n            # -------------------------------------------------\n\
+          \n            if filter_logic not in allowed_filter_logic:\n           \
+          \     issues.append(\n                    f\"{display_step_id} \"\n    \
+          \                f\"filter_logic 非法：{filter_logic}\"\n                )\n\
+          \n            # -------------------------------------------------\n    \
+          \        # 5.7 filters\n            # -------------------------------------------------\n\
+          \n            if not isinstance(filters, list):\n                issues.append(\n\
+          \                    f\"{display_step_id} \"\n                    f\"filters\
+          \ 必须为数组\"\n                )\n\n            else:\n                for j,\
+          \ filter_item in enumerate(filters):\n\n                    filter_no =\
+          \ j + 1\n\n                    if not isinstance(filter_item, dict):\n \
+          \                       issues.append(\n                            f\"\
+          {display_step_id} \"\n                            f\"第 {filter_no} 个 filter\
+          \ 格式错误\"\n                        )\n                        continue\n\n\
+          \                    required_filter_fields = [\n                      \
+          \  \"field\",\n                        \"operator\",\n                 \
+          \       \"value\"\n                    ]\n\n                    for field\
+          \ in required_filter_fields:\n                        if field not in filter_item:\n\
+          \                            issues.append(\n                          \
+          \      f\"{display_step_id} \"\n                                f\"第 {filter_no}\
+          \ 个 filter \"\n                                f\"缺少 {field}\"\n       \
+          \                     )\n\n                    filter_operator = filter_item.get(\n\
+          \                        \"operator\"\n                    )\n\n       \
+          \             if filter_operator not in allowed_operators:\n           \
+          \             issues.append(\n                            f\"{display_step_id}\
+          \ \"\n                            f\"第 {filter_no} 个 filter \"\n       \
+          \                     f\"operator 非法：{filter_operator}\"\n             \
+          \           )\n\n                    if filter_operator == \"in\":\n   \
+          \                     filter_value = filter_item.get(\"value\")\n\n    \
+          \                    if (\n                            not isinstance(filter_value,\
+          \ list)\n                            or not filter_value\n             \
+          \           ):\n                            issues.append(\n           \
+          \                     f\"{display_step_id} \"\n                        \
+          \        f\"第 {filter_no} 个 filter \"\n                                f\"\
+          operator 为 in 时 \"\n                                f\"value 必须为非空数组\"\n\
+          \                            )\n\n            # -------------------------------------------------\n\
+          \            # 5.8 filter_logic 与 filters 数量\n            # -------------------------------------------------\n\
+          \n            if isinstance(filters, list):\n\n                if len(filters)\
+          \ == 0:\n                    if filter_logic is not None:\n            \
+          \            issues.append(\n                            f\"{display_step_id}\
+          \ \"\n                            f\"没有 filters 时 \"\n                 \
+          \           f\"filter_logic 应为 null\"\n                        )\n\n   \
+          \             elif len(filters) == 1:\n                    if filter_logic\
+          \ != \"SINGLE\":\n                        issues.append(\n             \
+          \               f\"{display_step_id} \"\n                            f\"\
+          只有一个 filter 时 \"\n                            f\"filter_logic 应为 SINGLE\"\
+          \n                        )\n\n                elif len(filters) > 1:\n\
+          \                    if filter_logic not in {\"AND\", \"OR\"}:\n       \
+          \                 issues.append(\n                            f\"{display_step_id}\
+          \ \"\n                            f\"存在多个 filters 时 \"\n               \
+          \             f\"filter_logic 应为 AND 或 OR\"\n                        )\n\
+          \n            # =================================================\n    \
+          \        # 5.9 validation\n            # =================================================\n\
+          \n            if action_type == \"quantity_validation\":\n\n           \
+          \     if not isinstance(validation, dict):\n                    issues.append(\n\
+          \                        f\"{display_step_id} \"\n                     \
+          \   f\"quantity_validation 必须提供 validation\"\n                    )\n\n\
+          \                else:\n                    required_validation_fields =\
+          \ [\n                        \"logic\",\n                        \"checks\"\
+          ,\n                        \"on_pass\",\n                        \"on_fail\"\
+          \n                    ]\n\n                    for field in required_validation_fields:\n\
+          \                        if field not in validation:\n                 \
+          \           issues.append(\n                                f\"{display_step_id}\
+          \ \"\n                                f\"validation 缺少 {field}\"\n     \
+          \                       )\n\n                    # -----------------------------------------\n\
+          \                    # validation.logic\n                    # -----------------------------------------\n\
+          \n                    validation_logic = validation.get(\"logic\")\n\n \
+          \                   allowed_validation_logic = {\n                     \
+          \   \"SINGLE\",\n                        \"AND\",\n                    \
+          \    \"OR\"\n                    }\n\n                    if (\n       \
+          \                 validation_logic\n                        not in allowed_validation_logic\n\
+          \                    ):\n                        issues.append(\n      \
+          \                      f\"{display_step_id} \"\n                       \
+          \     f\"validation.logic 必须为 \"\n                            f\"SINGLE\
+          \ / AND / OR\"\n                        )\n\n                    # -----------------------------------------\n\
+          \                    # validation.checks\n                    # -----------------------------------------\n\
+          \n                    checks = validation.get(\"checks\")\n\n          \
+          \          if not isinstance(checks, list) or not checks:\n            \
+          \            issues.append(\n                            f\"{display_step_id}\
+          \ \"\n                            f\"validation.checks \"\n            \
+          \                f\"必须为非空数组\"\n                        )\n\n           \
+          \         else:\n                        allowed_validation_operators =\
+          \ {\n                            \"equals\",\n                         \
+          \   \"not_equals\",\n                            \"greater_than\",\n   \
+          \                         \"less_than\",\n                            \"\
+          greater_or_equal\",\n                            \"less_or_equal\",\n  \
+          \                          \"other\"\n                        }\n\n    \
+          \                    for j, check in enumerate(checks):\n\n            \
+          \                check_no = j + 1\n\n                            if not\
+          \ isinstance(check, dict):\n                                issues.append(\n\
+          \                                    f\"{display_step_id} \"\n         \
+          \                           f\"第 {check_no} 个 \"\n                     \
+          \               f\"validation check 格式错误\"\n                           \
+          \     )\n                                continue\n\n                  \
+          \          for field in [\n                                \"left\",\n \
+          \                               \"operator\",\n                        \
+          \        \"right\"\n                            ]:\n                   \
+          \             if field not in check:\n                                 \
+          \   issues.append(\n                                        f\"{display_step_id}\
+          \ \"\n                                        f\"第 {check_no} 个 check \"\
+          \n                                        f\"缺少 {field}\"\n            \
+          \                        )\n\n                            # ---------------------------------\n\
+          \                            # left\n                            # ---------------------------------\n\
+          \n                            left = check.get(\"left\")\n\n           \
+          \                 if not isinstance(left, dict):\n                     \
+          \           issues.append(\n                                    f\"{display_step_id}\
+          \ \"\n                                    f\"第 {check_no} 个 check \"\n \
+          \                                   f\"left 必须为 Object\"\n             \
+          \                   )\n\n                            else:\n           \
+          \                     if not left.get(\"source_table\"):\n             \
+          \                       issues.append(\n                               \
+          \         f\"{display_step_id} \"\n                                    \
+          \    f\"第 {check_no} 个 check.left \"\n                                 \
+          \       f\"缺少 source_table\"\n                                    )\n\n\
+          \                                if not left.get(\"field\"):\n         \
+          \                           issues.append(\n                           \
+          \             f\"{display_step_id} \"\n                                \
+          \        f\"第 {check_no} 个 check.left \"\n                             \
+          \           f\"缺少 field\"\n                                    )\n\n   \
+          \                         # ---------------------------------\n        \
+          \                    # operator\n                            # ---------------------------------\n\
+          \n                            check_operator = check.get(\"operator\")\n\
+          \n                            if (\n                                check_operator\n\
+          \                                not in allowed_validation_operators\n \
+          \                           ):\n                                issues.append(\n\
+          \                                    f\"{display_step_id} \"\n         \
+          \                           f\"第 {check_no} 个 check \"\n               \
+          \                     f\"operator 非法：\"\n                              \
+          \      f\"{check_operator}\"\n                                )\n\n    \
+          \                        # ---------------------------------\n         \
+          \                   # right\n                            # ---------------------------------\n\
+          \n                            right = check.get(\"right\")\n\n         \
+          \                   if not isinstance(right, dict):\n                  \
+          \              issues.append(\n                                    f\"{display_step_id}\
+          \ \"\n                                    f\"第 {check_no} 个 check \"\n \
+          \                                   f\"right 必须为 Object\"\n            \
+          \                    )\n\n                            else:\n          \
+          \                      for field in [\n                                \
+          \    \"type\",\n                                    \"source_table\",\n\
+          \                                    \"field\",\n                      \
+          \              \"value\"\n                                ]:\n         \
+          \                           if field not in right:\n                   \
+          \                     issues.append(\n                                 \
+          \           f\"{display_step_id} \"\n                                  \
+          \          f\"第 {check_no} 个 \"\n                                      \
+          \      f\"check.right \"\n                                            f\"\
+          缺少 {field}\"\n                                        )\n\n            \
+          \                    right_type = right.get(\"type\")\n\n              \
+          \                  if right_type not in {\n                            \
+          \        \"constant\",\n                                    \"field\"\n\
+          \                                }:\n                                  \
+          \  issues.append(\n                                        f\"{display_step_id}\
+          \ \"\n                                        f\"第 {check_no} 个 \"\n   \
+          \                                     f\"check.right.type \"\n         \
+          \                               f\"必须为 constant 或 field\"\n            \
+          \                        )\n\n                                # constant\n\
+          \                                elif right_type == \"constant\":\n\n  \
+          \                                  if right.get(\"value\") is None:\n  \
+          \                                      issues.append(\n                \
+          \                            f\"{display_step_id} \"\n                 \
+          \                           f\"第 {check_no} 个 check \"\n               \
+          \                             f\"constant 缺少 value\"\n                 \
+          \                       )\n\n                                    if (\n\
+          \                                        right.get(\"source_table\")\n \
+          \                                       is not None\n                  \
+          \                  ):\n                                        issues.append(\n\
+          \                                            f\"{display_step_id} \"\n \
+          \                                           f\"第 {check_no} 个 check \"\n\
+          \                                            f\"right.type=constant 时 \"\
+          \n                                            f\"source_table 应为 null\"\n\
+          \                                        )\n\n                         \
+          \           if right.get(\"field\") is not None:\n                     \
+          \                   issues.append(\n                                   \
+          \         f\"{display_step_id} \"\n                                    \
+          \        f\"第 {check_no} 个 check \"\n                                  \
+          \          f\"right.type=constant 时 \"\n                               \
+          \             f\"field 应为 null\"\n                                     \
+          \   )\n\n                                # field\n                     \
+          \           elif right_type == \"field\":\n\n                          \
+          \          if not right.get(\"source_table\"):\n                       \
+          \                 issues.append(\n                                     \
+          \       f\"{display_step_id} \"\n                                      \
+          \      f\"第 {check_no} 个 check \"\n                                    \
+          \        f\"right.type=field 时 \"\n                                    \
+          \        f\"缺少 source_table\"\n                                        )\n\
+          \n                                    if not right.get(\"field\"):\n   \
+          \                                     issues.append(\n                 \
+          \                           f\"{display_step_id} \"\n                  \
+          \                          f\"第 {check_no} 个 check \"\n                \
+          \                            f\"right.type=field 时 \"\n                \
+          \                            f\"缺少 field\"\n                           \
+          \             )\n\n                                    if right.get(\"value\"\
+          ) is not None:\n                                        issues.append(\n\
+          \                                            f\"{display_step_id} \"\n \
+          \                                           f\"第 {check_no} 个 check \"\n\
+          \                                            f\"right.type=field 时 \"\n\
+          \                                            f\"value 应为 null\"\n      \
+          \                                  )\n\n                        # -------------------------------------\n\
+          \                        # logic 与 checks 数量一致性\n                      \
+          \  # -------------------------------------\n\n                        if\
+          \ len(checks) == 1:\n                            if validation_logic !=\
+          \ \"SINGLE\":\n                                issues.append(\n        \
+          \                            f\"{display_step_id} \"\n                 \
+          \                   f\"只有一个 validation check 时 \"\n                    \
+          \                f\"logic 应为 SINGLE\"\n                                )\n\
+          \n                        elif len(checks) > 1:\n                      \
+          \      if validation_logic not in {\n                                \"\
+          AND\",\n                                \"OR\"\n                       \
+          \     }:\n                                issues.append(\n             \
+          \                       f\"{display_step_id} \"\n                      \
+          \              f\"存在多个 validation checks 时 \"\n                        \
+          \            f\"logic 应为 AND 或 OR\"\n                                )\n\
+          \n                    # -----------------------------------------\n    \
+          \                # on_pass / on_fail\n                    # 字段必须存在，但允许值为\
+          \ null。\n                    # 原始业务规则可能只定义通过结果，\n                    # 而没有定义失败结果，反之亦然。\n\
+          \                    # -----------------------------------------\n\n   \
+          \                 for result_field in [\"on_pass\", \"on_fail\"]:\n\n  \
+          \                      if result_field not in validation:\n            \
+          \                issues.append(\n                                f\"{display_step_id}\
+          \ \"\n                                f\"validation 缺少 {result_field} 字段\"\
+          \n                            )\n\n                        else:\n     \
+          \                       result_value = validation.get(result_field)\n\n\
+          \                            if (\n                                result_value\
+          \ is not None\n                                and not isinstance(result_value,\
+          \ str)\n                            ):\n                               \
+          \ issues.append(\n                                    f\"{display_step_id}\
+          \ \"\n                                    f\"validation.{result_field} \"\
+          \n                                    f\"必须为字符串或 null\"\n              \
+          \                  )\n\n            else:\n                # 非 quantity_validation\
+          \ 不应带 validation\n                if validation is not None:\n         \
+          \           issues.append(\n                        f\"{display_step_id}\
+          \ \"\n                        f\"非 quantity_validation 的 \"\n          \
+          \              f\"validation 应为 null\"\n                    )\n\n      \
+          \      # =================================================\n           \
+          \ # 5.10 各 action_type 专项检查\n            # =================================================\n\
+          \n            # assign_operation\n            if action_type == \"assign_operation\"\
+          :\n\n                if not step.get(\"operation\"):\n                 \
+          \   issues.append(\n                        f\"{display_step_id} \"\n  \
+          \                      f\"assign_operation 缺少 operation\"\n            \
+          \        )\n\n                if not input_ref:\n                    issues.append(\n\
+          \                        f\"{display_step_id} \"\n                     \
+          \   f\"assign_operation 缺少 input_ref\"\n                    )\n\n      \
+          \      # select_children\n            if action_type == \"select_children\"\
+          :\n\n                if not input_ref:\n                    issues.append(\n\
+          \                        f\"{display_step_id} \"\n                     \
+          \   f\"select_children 缺少 input_ref\"\n                    )\n\n       \
+          \         if not step.get(\"source_table\"):\n                    issues.append(\n\
+          \                        f\"{display_step_id} \"\n                     \
+          \   f\"select_children 缺少 source_table\"\n                    )\n\n    \
+          \        # filter_materials\n            if action_type == \"filter_materials\"\
+          :\n\n                if not input_ref:\n                    issues.append(\n\
+          \                        f\"{display_step_id} \"\n                     \
+          \   f\"filter_materials 缺少 input_ref\"\n                    )\n\n      \
+          \          if not isinstance(filters, list) or not filters:\n          \
+          \          issues.append(\n                        f\"{display_step_id}\
+          \ \"\n                        f\"filter_materials 没有明确筛选条件\"\n         \
+          \           )\n\n            # quantity_validation\n            if action_type\
+          \ == \"quantity_validation\":\n\n                if validation is None:\n\
+          \                    issues.append(\n                        f\"{display_step_id}\
+          \ \"\n                        f\"quantity_validation 的 \"\n            \
+          \            f\"validation 不能为 null\"\n                    )\n\n       \
+          \     # -------------------------------------------------\n            #\
+          \ 5.11 description\n            # -------------------------------------------------\n\
+          \n            if not step.get(\"description\"):\n                issues.append(\n\
+          \                    f\"{display_step_id} \"\n                    f\"description\
+          \ 不能为空\"\n                )\n\n            # -------------------------------------------------\n\
+          \            # 5.12 output_ref 唯一性\n            # -------------------------------------------------\n\
+          \n            if output_ref is not None:\n\n                if (\n     \
+          \               not isinstance(output_ref, str)\n                    or\
+          \ not output_ref.strip()\n                ):\n                    issues.append(\n\
+          \                        f\"{display_step_id} \"\n                     \
+          \   f\"output_ref 必须为非空字符串或 null\"\n                    )\n\n          \
+          \      elif output_ref in available_refs:\n                    issues.append(\n\
+          \                        f\"output_ref 重复：{output_ref}\"\n             \
+          \       )\n\n                else:\n                    available_refs.add(output_ref)\n\
+          \n    # =========================================================\n    #\
+          \ 6. ambiguities\n    # =========================================================\n\
+          \n    ambiguities = rule.get(\"ambiguities\")\n\n    if not isinstance(ambiguities,\
+          \ list):\n        issues.append(\n            \"ambiguities 必须为数组\"\n  \
+          \      )\n\n    else:\n        for i, ambiguity in enumerate(ambiguities):\n\
+          \            if not isinstance(ambiguity, str):\n                issues.append(\n\
+          \                    f\"ambiguities 第 {i + 1} 项必须为字符串\"\n              \
+          \  )\n\n    # =========================================================\n\
+          \    # 7. needs_human_review\n    # =========================================================\n\
+          \n    if rule.get(\"needs_human_review\") is not True:\n        issues.append(\n\
+          \            \"needs_human_review 必须为 true\"\n        )\n\n    # =========================================================\n\
+          \    # 8. 最终输出\n    # =========================================================\n\
+          \n    # 注意：\n    # Dify 的 Object 输出存在嵌套深度限制。\n    # 因此这里把完整规则转成 JSON String\
+          \ 输出。\n    # Code 内部仍然使用 dict 完成所有校验。\n    rule_json_string = json.dumps(\n\
+          \        rule,\n        ensure_ascii=False,\n        indent=2\n    )\n\n\
+          \    return {\n        \"rule_json\": rule_json_string,\n        \"valid\"\
+          : len(issues) == 0,\n        \"issues\": issues\n    }"
+        code_language: python3
+        desc: 校验
+        outputs:
+          issues:
+            children: null
+            type: array[string]
+          rule_json:
+            children: null
+            type: string
+          valid:
+            children: null
+            type: boolean
+        selected: false
+        title: 代码执行
+        type: code
+        variables:
+        - value_selector:
+          - '1789372453366'
+          - text
+          value_type: string
+          variable: llm_text
+      height: 79
+      id: '1789372656052'
+      position:
+        x: 683
+        y: 282
+      positionAbsolute:
+        x: 683
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 0
+    - data:
+        outputs:
+        - value_selector:
+          - '1789372656052'
+          - rule_json
+          value_type: object
+          variable: rule_json
+        - value_selector:
+          - '1789372656052'
+          - valid
+          value_type: boolean
+          variable: valid
+        - value_selector:
+          - '1789372656052'
+          - issues
+          value_type: array[string]
+          variable: issues
+        selected: false
+        title: 输出
+        type: end
+      height: 141
+      id: '1789373001002'
+      position:
+        x: 984
+        y: 282
+      positionAbsolute:
+        x: 984
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 241
+      zIndex: 0
+    viewport:
+      x: -487
+      y: 115
+      zoom: 1
+  rag_pipeline_variables: []
